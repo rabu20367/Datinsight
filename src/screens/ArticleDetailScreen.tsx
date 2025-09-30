@@ -27,7 +27,7 @@ export default function ArticleDetailScreen({ route, navigation }: any) {
         </TouchableOpacity>
       ),
     });
-  }, []);
+  }, [navigation]);
 
   const loadAnalysis = async () => {
     try {

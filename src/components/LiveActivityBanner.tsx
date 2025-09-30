@@ -27,7 +27,7 @@ export default function LiveActivityBanner({ items }: LiveActivityBannerProps) {
     );
     pulse.start();
     return () => pulse.stop();
-  }, []);
+  }, [pulseAnim]);
 
   const getItemTitle = (item: FeedItem) => {
     if (item.type === 'news') return (item.data as NewsArticle).title;
