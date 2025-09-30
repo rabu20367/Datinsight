@@ -51,15 +51,12 @@ function TabNavigator() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#0EA5E9',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: '#0F4C81',
+        tabBarInactiveTintColor: '#94A3B8',
         tabBarStyle: {
-          borderTopWidth: 0,
-          elevation: 24,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 16,
+          borderTopWidth: 1,
+          borderTopColor: '#E2E8F0',
+          backgroundColor: '#FFFFFF',
           paddingBottom: 8,
           paddingTop: 8,
           height: 70,
@@ -134,9 +131,9 @@ export default function App() {
               title: 'Deep Insights',
               headerBackTitle: 'Back',
               headerStyle: {
-                backgroundColor: '#F9FAFB',
+                backgroundColor: '#FFFFFF',
               },
-              headerTintColor: '#0EA5E9',
+              headerTintColor: '#0F4C81',
               headerShadowVisible: false,
             }}
           />

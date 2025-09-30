@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { FeedItem, NewsArticle, SocialPost, PodcastEpisode } from '../types';
+import { Colors, getTypeColor } from '../theme/colors';
 
 interface LiveActivityBannerProps {
   items: FeedItem[];
@@ -14,7 +15,7 @@ export default function LiveActivityBanner({ items }: LiveActivityBannerProps) {
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.2,
+          toValue: 1.3,
           duration: 1000,
           useNativeDriver: true,
         }),
@@ -45,6 +46,8 @@ export default function LiveActivityBanner({ items }: LiveActivityBannerProps) {
     }
   };
 
+  if (items.length === 0) return null;
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -60,90 +63,91 @@ export default function LiveActivityBanner({ items }: LiveActivityBannerProps) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {items.map((item, index) => (
-          <View key={item.id} style={styles.activityCard}>
-            <View style={[styles.iconContainer, { backgroundColor: getIconColor(item.type) }]}>
-              <Ionicons name={getIcon(item.type) as any} size={16} color="#fff" />
+        {items.map((item) => {
+          const typeColor = getTypeColor(item.type);
+          return (
+            <View key={item.id} style={styles.activityCard}>
+              <View style={[styles.iconContainer, { backgroundColor: typeColor }]}>
+                <Ionicons name={getIcon(item.type) as any} size={14} color="#FFFFFF" />
+              </View>
+              <Text style={styles.activityText} numberOfLines={2}>
+                {getItemTitle(item)}
+              </Text>
             </View>
-            <Text style={styles.activityText} numberOfLines={2}>
-              {getItemTitle(item)}
-            </Text>
-          </View>
-        ))}
+          );
+        })}
       </ScrollView>
     </View>
   );
 }
 
-function getIconColor(type: string) {
-  switch (type) {
-    case 'news': return '#3B82F6';
-    case 'social': return '#A855F7';
-    case 'podcast': return '#10B981';
-    default: return '#6B7280';
-  }
-}
-
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: Colors.border,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    marginBottom: 8,
-    gap: 12,
+    marginBottom: 10,
+    gap: 10,
   },
   liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    backgroundColor: Colors.accentBg,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10B981',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.accent,
   },
   liveText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#10B981',
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.accent,
+    letterSpacing: 0.5,
   },
   headerText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#6B7280',
+    color: Colors.textSecondary,
   },
   scrollContent: {
     paddingHorizontal: 16,
-    gap: 12,
+    gap: 10,
   },
   activityCard: {
-    width: 200,
-    backgroundColor: '#F9FAFB',
+    width: 180,
+    backgroundColor: Colors.background,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   activityText: {
     flex: 1,
-    fontSize: 13,
-    color: '#374151',
-    lineHeight: 18,
+    fontSize: 12,
+    color: Colors.textPrimary,
+    lineHeight: 17,
+    fontWeight: '500',
   },
 });
-

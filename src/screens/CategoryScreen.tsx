@@ -8,7 +8,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Logo from '../components/Logo';
 import { CATEGORIES, Category } from '../types';
+import { Colors } from '../theme/colors';
 
 const CATEGORY_ICONS: Record<Category, keyof typeof Ionicons.glyphMap> = {
   'Technology': 'hardware-chip',
@@ -39,52 +41,46 @@ export default function CategoryScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Interests</Text>
-        <Text style={styles.headerSubtitle}>
-          Select topics you want to follow
-        </Text>
+        <Logo size="small" showText={false} />
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.headerTitle}>Your Interests</Text>
+          <Text style={styles.headerSubtitle}>
+            Select topics to personalize your feed
+          </Text>
+        </View>
       </View>
 
       <ScrollView style={styles.content}>
-        {CATEGORIES.map(category => {
+        {CATEGORIES.map((category, index) => {
           const isSelected = selectedCategories.includes(category);
+          const colors = [Colors.primary, Colors.accent, Colors.tertiary];
+          const iconColor = colors[index % 3];
           
           return (
             <TouchableOpacity
               key={category}
-              style={[
-                styles.categoryCard,
-                isSelected && styles.categoryCardActive
-              ]}
+              style={[styles.categoryCard, isSelected && styles.categoryCardActive]}
               onPress={() => toggleCategory(category)}
             >
-              <View style={styles.categoryContent}>
-                <View style={[
-                  styles.iconContainer,
-                  isSelected && styles.iconContainerActive
-                ]}>
-                  <Ionicons
-                    name={CATEGORY_ICONS[category]}
-                    size={28}
-                    color={isSelected ? '#fff' : '#0EA5E9'}
-                  />
-                </View>
-                
-                <View style={styles.categoryText}>
-                  <Text style={[
-                    styles.categoryTitle,
-                    isSelected && styles.categoryTitleActive
-                  ]}>
-                    {category}
-                  </Text>
-                  <Text style={styles.categoryDescription}>
-                    Latest {category.toLowerCase()} news and trends
-                  </Text>
-                </View>
+              <View style={[styles.iconContainer, { backgroundColor: iconColor + '15' }]}>
+                <Ionicons
+                  name={CATEGORY_ICONS[category]}
+                  size={24}
+                  color={iconColor}
+                />
+              </View>
+              
+              <View style={styles.categoryText}>
+                <Text style={[styles.categoryTitle, isSelected && { color: Colors.primary }]}>
+                  {category}
+                </Text>
+                <Text style={styles.categoryDescription}>
+                  Latest {category.toLowerCase()} insights
+                </Text>
               </View>
 
               {isSelected && (
-                <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+                <Ionicons name="checkmark-circle" size={24} color={Colors.accent} />
               )}
             </TouchableOpacity>
           );
@@ -103,25 +99,27 @@ export default function CategoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 16,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: Colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.textPrimary,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
   content: {
     flex: 1,
@@ -131,61 +129,48 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
+    borderRadius: 12,
+    marginBottom: 10,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: Colors.border,
   },
   categoryCardActive: {
-    borderColor: '#0EA5E9',
-    backgroundColor: '#F0F9FF',
-  },
-  categoryContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primaryBg,
   },
   iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#EFF6FF',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
-  },
-  iconContainerActive: {
-    backgroundColor: '#0EA5E9',
+    marginRight: 14,
   },
   categoryText: {
     flex: 1,
   },
   categoryTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  categoryTitleActive: {
-    color: '#0369A1',
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 2,
   },
   categoryDescription: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
+    color: Colors.textSecondary,
   },
   footer: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: Colors.border,
   },
   footerText: {
     textAlign: 'center',
     fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
+    color: Colors.textSecondary,
+    fontWeight: '600',
   },
 });
-

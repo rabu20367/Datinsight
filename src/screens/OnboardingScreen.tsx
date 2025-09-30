@@ -6,47 +6,22 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Animated,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Logo from '../components/Logo';
+import { Colors } from '../theme/colors';
 
 interface OnboardingProps {
   onComplete: () => void;
 }
 
 const ONBOARDING_STEPS = [
-  {
-    id: 'welcome',
-    title: 'Welcome to Datinsight',
-    subtitle: "Your AI-powered intelligence companion",
-    icon: 'sparkles',
-  },
-  {
-    id: 'purpose',
-    title: "What's your goal?",
-    subtitle: 'Help us understand what matters to you',
-    icon: 'target',
-  },
-  {
-    id: 'background',
-    title: 'Tell us about yourself',
-    subtitle: 'So we can personalize your insights',
-    icon: 'person',
-  },
-  {
-    id: 'interests',
-    title: 'What interests you?',
-    subtitle: 'Select topics you want to follow',
-    icon: 'heart',
-  },
-  {
-    id: 'notifications',
-    title: 'Stay informed',
-    subtitle: 'How often do you want insights?',
-    icon: 'notifications',
-  },
+  { id: 'welcome', title: 'Welcome to Datinsight', subtitle: "Your intelligent insights companion", icon: 'sparkles' },
+  { id: 'purpose', title: "What's your goal?", subtitle: 'Help us personalize your insights', icon: 'target' },
+  { id: 'background', title: 'About you', subtitle: 'So we can tailor the analysis', icon: 'person' },
+  { id: 'interests', title: 'Your interests', subtitle: 'Topics you want to follow', icon: 'heart' },
+  { id: 'notifications', title: 'Stay updated', subtitle: 'How often do you want insights?', icon: 'notifications' },
 ];
 
 const GOALS = [
@@ -98,14 +73,12 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
 
   const handleNext = async () => {
     if (currentStep === ONBOARDING_STEPS.length - 1) {
-      // Save preferences
       await AsyncStorage.setItem('onboardingComplete', 'true');
       await AsyncStorage.setItem('userGoals', JSON.stringify(selectedGoals));
       await AsyncStorage.setItem('userBackground', selectedBackground);
       await AsyncStorage.setItem('userInterests', JSON.stringify(selectedInterests));
       await AsyncStorage.setItem('notificationInterval', String(notificationInterval));
       await AsyncStorage.setItem('additionalInfo', additionalInfo);
-      
       onComplete();
     } else {
       setCurrentStep(currentStep + 1);
@@ -113,25 +86,19 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
   const toggleGoal = (goalId: string) => {
-    if (selectedGoals.includes(goalId)) {
-      setSelectedGoals(selectedGoals.filter(id => id !== goalId));
-    } else {
-      setSelectedGoals([...selectedGoals, goalId]);
-    }
+    setSelectedGoals(prev =>
+      prev.includes(goalId) ? prev.filter(id => id !== goalId) : [...prev, goalId]
+    );
   };
 
   const toggleInterest = (interestId: string) => {
-    if (selectedInterests.includes(interestId)) {
-      setSelectedInterests(selectedInterests.filter(id => id !== interestId));
-    } else {
-      setSelectedInterests([...selectedInterests, interestId]);
-    }
+    setSelectedInterests(prev =>
+      prev.includes(interestId) ? prev.filter(id => id !== interestId) : [...prev, interestId]
+    );
   };
 
   const canProceed = () => {
@@ -152,22 +119,16 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
       case 'welcome':
         return (
           <View style={styles.welcomeContent}>
-            <View style={styles.iconContainer}>
-              <LinearGradient
-                colors={['#0EA5E9', '#A855F7']}
-                style={styles.iconGradient}
-              >
-                <Ionicons name="sparkles" size={80} color="#fff" />
-              </LinearGradient>
-            </View>
-            <Text style={styles.welcomeText}>
-              Get personalized insights that matter to you
+            <Logo size="large" showText={false} />
+            <Text style={styles.welcomeTitle}>Datinsight</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Intelligent insights that understand you
             </Text>
             <View style={styles.featureList}>
-              <FeatureItem icon="trending-up" text="Deep pattern analysis" />
-              <FeatureItem icon="bulb" text="Understand motives & causes" />
-              <FeatureItem icon="eye" text="Predict future outcomes" />
-              <FeatureItem icon="notifications" text="Real-time intelligent alerts" />
+              <FeatureItem icon="eye" text="Deep pattern analysis" color={Colors.primary} />
+              <FeatureItem icon="bulb" text="Understand motives & causes" color={Colors.accent} />
+              <FeatureItem icon="trending-up" text="Predict future outcomes" color={Colors.tertiary} />
+              <FeatureItem icon="notifications" text="Smart personalized alerts" color={Colors.primary} />
             </View>
           </View>
         );
@@ -176,39 +137,29 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         return (
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.gridContainer}>
-              {GOALS.map(goal => (
-                <TouchableOpacity
-                  key={goal.id}
-                  style={[
-                    styles.goalCard,
-                    selectedGoals.includes(goal.id) && styles.goalCardSelected
-                  ]}
-                  onPress={() => toggleGoal(goal.id)}
-                >
-                  <View style={[
-                    styles.goalIconContainer,
-                    selectedGoals.includes(goal.id) && styles.goalIconContainerSelected
-                  ]}>
-                    <Ionicons
-                      name={goal.icon as any}
-                      size={28}
-                      color={selectedGoals.includes(goal.id) ? '#fff' : '#0EA5E9'}
-                    />
-                  </View>
-                  <Text style={[
-                    styles.goalLabel,
-                    selectedGoals.includes(goal.id) && styles.goalLabelSelected
-                  ]}>
-                    {goal.label}
-                  </Text>
-                  <Text style={styles.goalDesc}>{goal.desc}</Text>
-                  {selectedGoals.includes(goal.id) && (
-                    <View style={styles.checkmark}>
-                      <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+              {GOALS.map(goal => {
+                const isSelected = selectedGoals.includes(goal.id);
+                return (
+                  <TouchableOpacity
+                    key={goal.id}
+                    style={[styles.goalCard, isSelected && styles.goalCardSelected]}
+                    onPress={() => toggleGoal(goal.id)}
+                  >
+                    <View style={[styles.goalIcon, isSelected && styles.goalIconSelected]}>
+                      <Ionicons name={goal.icon as any} size={24} color={isSelected ? '#FFFFFF' : Colors.primary} />
                     </View>
-                  )}
-                </TouchableOpacity>
-              ))}
+                    <Text style={[styles.goalLabel, isSelected && styles.goalLabelSelected]}>
+                      {goal.label}
+                    </Text>
+                    <Text style={styles.goalDesc}>{goal.desc}</Text>
+                    {isSelected && (
+                      <View style={styles.checkmark}>
+                        <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </ScrollView>
         );
@@ -217,38 +168,29 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         return (
           <View>
             <View style={styles.backgroundGrid}>
-              {BACKGROUNDS.map(bg => (
-                <TouchableOpacity
-                  key={bg.id}
-                  style={[
-                    styles.backgroundCard,
-                    selectedBackground === bg.id && styles.backgroundCardSelected
-                  ]}
-                  onPress={() => setSelectedBackground(bg.id)}
-                >
-                  <Ionicons
-                    name={bg.icon as any}
-                    size={32}
-                    color={selectedBackground === bg.id ? '#fff' : '#0EA5E9'}
-                  />
-                  <Text style={[
-                    styles.backgroundLabel,
-                    selectedBackground === bg.id && styles.backgroundLabelSelected
-                  ]}>
-                    {bg.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {BACKGROUNDS.map(bg => {
+                const isSelected = selectedBackground === bg.id;
+                return (
+                  <TouchableOpacity
+                    key={bg.id}
+                    style={[styles.backgroundCard, isSelected && styles.backgroundCardSelected]}
+                    onPress={() => setSelectedBackground(bg.id)}
+                  >
+                    <Ionicons name={bg.icon as any} size={28} color={isSelected ? '#FFFFFF' : Colors.primary} />
+                    <Text style={[styles.backgroundLabel, isSelected && styles.backgroundLabelSelected]}>
+                      {bg.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>
-                Tell us more (optional)
-              </Text>
+              <Text style={styles.inputLabel}>Tell us more (optional)</Text>
               <TextInput
                 style={styles.textInput}
-                placeholder="e.g., I'm a fintech startup founder interested in AI trends..."
-                placeholderTextColor="#9CA3AF"
+                placeholder="e.g., Tech startup founder interested in AI trends..."
+                placeholderTextColor={Colors.textMuted}
                 multiline
                 numberOfLines={4}
                 value={additionalInfo}
@@ -261,31 +203,22 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
       case 'interests':
         return (
           <View style={styles.interestsContainer}>
-            {CATEGORIES.map(category => (
-              <TouchableOpacity
-                key={category.id}
-                style={[
-                  styles.interestChip,
-                  selectedInterests.includes(category.id) && styles.interestChipSelected
-                ]}
-                onPress={() => toggleInterest(category.id)}
-              >
-                <Ionicons
-                  name={category.icon as any}
-                  size={20}
-                  color={selectedInterests.includes(category.id) ? '#fff' : '#0EA5E9'}
-                />
-                <Text style={[
-                  styles.interestLabel,
-                  selectedInterests.includes(category.id) && styles.interestLabelSelected
-                ]}>
-                  {category.label}
-                </Text>
-                {selectedInterests.includes(category.id) && (
-                  <Ionicons name="checkmark" size={18} color="#fff" />
-                )}
-              </TouchableOpacity>
-            ))}
+            {CATEGORIES.map(category => {
+              const isSelected = selectedInterests.includes(category.id);
+              return (
+                <TouchableOpacity
+                  key={category.id}
+                  style={[styles.interestChip, isSelected && styles.interestChipSelected]}
+                  onPress={() => toggleInterest(category.id)}
+                >
+                  <Ionicons name={category.icon as any} size={18} color={isSelected ? '#FFFFFF' : Colors.primary} />
+                  <Text style={[styles.interestLabel, isSelected && styles.interestLabelSelected]}>
+                    {category.label}
+                  </Text>
+                  {isSelected && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         );
 
@@ -293,37 +226,24 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         return (
           <View>
             <Text style={styles.notificationDesc}>
-              Choose how frequently you want to receive intelligent insights and pattern alerts
+              Choose your preferred frequency for intelligent insights
             </Text>
             <View style={styles.notificationGrid}>
-              {NOTIFICATION_INTERVALS.map(interval => (
-                <TouchableOpacity
-                  key={interval.id}
-                  style={[
-                    styles.notificationCard,
-                    notificationInterval === interval.value && styles.notificationCardSelected
-                  ]}
-                  onPress={() => setNotificationInterval(interval.value)}
-                >
-                  <Ionicons
-                    name={interval.icon as any}
-                    size={32}
-                    color={notificationInterval === interval.value ? '#fff' : '#0EA5E9'}
-                  />
-                  <Text style={[
-                    styles.notificationLabel,
-                    notificationInterval === interval.value && styles.notificationLabelSelected
-                  ]}>
-                    {interval.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View style={styles.notificationInfo}>
-              <Ionicons name="information-circle" size={20} color="#6B7280" />
-              <Text style={styles.notificationInfoText}>
-                You can change this anytime in settings
-              </Text>
+              {NOTIFICATION_INTERVALS.map(interval => {
+                const isSelected = notificationInterval === interval.value;
+                return (
+                  <TouchableOpacity
+                    key={interval.id}
+                    style={[styles.notificationCard, isSelected && styles.notificationCardSelected]}
+                    onPress={() => setNotificationInterval(interval.value)}
+                  >
+                    <Ionicons name={interval.icon as any} size={28} color={isSelected ? '#FFFFFF' : Colors.primary} />
+                    <Text style={[styles.notificationLabel, isSelected && styles.notificationLabelSelected]}>
+                      {interval.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         );
@@ -334,10 +254,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
   };
 
   return (
-    <LinearGradient
-      colors={['#F0F9FF', '#F3E8FF']}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       {/* Progress Bar */}
       <View style={styles.progressBarContainer}>
         <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
@@ -347,15 +264,13 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
       <View style={styles.header}>
         {currentStep > 0 && (
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#0EA5E9" />
+            <Ionicons name="arrow-back" size={24} color={Colors.primary} />
           </TouchableOpacity>
         )}
         <View style={styles.headerContent}>
-          <Ionicons
-            name={ONBOARDING_STEPS[currentStep].icon as any}
-            size={40}
-            color="#0EA5E9"
-          />
+          <View style={styles.iconCircle}>
+            <Ionicons name={ONBOARDING_STEPS[currentStep].icon as any} size={32} color={Colors.primary} />
+          </View>
           <Text style={styles.title}>{ONBOARDING_STEPS[currentStep].title}</Text>
           <Text style={styles.subtitle}>{ONBOARDING_STEPS[currentStep].subtitle}</Text>
         </View>
@@ -373,28 +288,21 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
           onPress={handleNext}
           disabled={!canProceed()}
         >
-          <LinearGradient
-            colors={canProceed() ? ['#0EA5E9', '#A855F7'] : ['#D1D5DB', '#D1D5DB']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.nextButtonGradient}
-          >
-            <Text style={styles.nextButtonText}>
-              {currentStep === ONBOARDING_STEPS.length - 1 ? 'Get Started' : 'Continue'}
-            </Text>
-            <Ionicons name="arrow-forward" size={20} color="#fff" />
-          </LinearGradient>
+          <Text style={styles.nextButtonText}>
+            {currentStep === ONBOARDING_STEPS.length - 1 ? 'Get Started' : 'Continue'}
+          </Text>
+          <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
-function FeatureItem({ icon, text }: { icon: string; text: string }) {
+function FeatureItem({ icon, text, color }: any) {
   return (
     <View style={styles.featureItem}>
-      <View style={styles.featureIconContainer}>
-        <Ionicons name={icon as any} size={20} color="#0EA5E9" />
+      <View style={[styles.featureIcon, { backgroundColor: color + '15' }]}>
+        <Ionicons name={icon} size={20} color={color} />
       </View>
       <Text style={styles.featureText}>{text}</Text>
     </View>
@@ -404,19 +312,21 @@ function FeatureItem({ icon, text }: { icon: string; text: string }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   progressBarContainer: {
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.5)',
+    height: 3,
+    backgroundColor: Colors.border,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: '#0EA5E9',
+    height: 3,
+    backgroundColor: Colors.primary,
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingBottom: 24,
+    backgroundColor: Colors.surface,
   },
   backButton: {
     marginBottom: 16,
@@ -424,43 +334,48 @@ const styles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
   },
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.primaryBg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginTop: 12,
+    fontSize: 26,
+    fontWeight: '700',
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 15,
+    color: Colors.textSecondary,
     marginTop: 8,
     textAlign: 'center',
   },
   content: {
     flex: 1,
     paddingHorizontal: 24,
+    paddingTop: 16,
   },
   welcomeContent: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 20,
   },
-  iconContainer: {
-    marginBottom: 32,
+  welcomeTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    marginTop: 24,
   },
-  iconGradient: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  welcomeText: {
-    fontSize: 18,
-    color: '#374151',
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: Colors.textSecondary,
     textAlign: 'center',
+    marginTop: 8,
     marginBottom: 40,
-    lineHeight: 26,
   },
   featureList: {
     width: '100%',
@@ -469,20 +384,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    backgroundColor: Colors.surface,
+    padding: 16,
+    borderRadius: 12,
   },
-  featureIconContainer: {
+  featureIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
   featureText: {
-    fontSize: 16,
-    color: '#374151',
+    fontSize: 15,
+    color: Colors.textPrimary,
     flex: 1,
+    fontWeight: '500',
   },
   gridContainer: {
     flexDirection: 'row',
@@ -491,43 +409,42 @@ const styles = StyleSheet.create({
   },
   goalCard: {
     width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
-    position: 'relative',
+    borderColor: Colors.border,
   },
   goalCardSelected: {
-    borderColor: '#0EA5E9',
-    backgroundColor: '#F0F9FF',
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primaryBg,
   },
-  goalIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#EFF6FF',
+  goalIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.primaryBg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  goalIconContainerSelected: {
-    backgroundColor: '#0EA5E9',
+  goalIconSelected: {
+    backgroundColor: Colors.primary,
   },
   goalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontSize: 15,
+    fontWeight: '700',
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
   goalLabelSelected: {
-    color: '#0369A1',
+    color: Colors.primary,
   },
   goalDesc: {
-    fontSize: 13,
-    color: '#6B7280',
-    lineHeight: 18,
+    fontSize: 12,
+    color: Colors.textSecondary,
+    lineHeight: 16,
   },
   checkmark: {
     position: 'absolute',
@@ -538,82 +455,82 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   backgroundCard: {
     width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 18,
     marginBottom: 12,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
   },
   backgroundCardSelected: {
-    borderColor: '#0EA5E9',
-    backgroundColor: '#0EA5E9',
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primary,
   },
   backgroundLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
+    color: Colors.textPrimary,
     marginTop: 8,
   },
   backgroundLabelSelected: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   inputContainer: {
     marginTop: 8,
   },
   inputLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#374151',
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textPrimary,
     marginBottom: 8,
   },
   textInput: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     borderRadius: 12,
-    padding: 16,
-    fontSize: 15,
-    color: '#111827',
+    padding: 14,
+    fontSize: 14,
+    color: Colors.textPrimary,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
     textAlignVertical: 'top',
   },
   interestsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
   interestChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 24,
+    backgroundColor: Colors.surface,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
-    gap: 8,
+    borderColor: Colors.border,
+    gap: 6,
   },
   interestChipSelected: {
-    backgroundColor: '#0EA5E9',
-    borderColor: '#0EA5E9',
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   interestLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#374151',
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textPrimary,
   },
   interestLabelSelected: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   notificationDesc: {
-    fontSize: 15,
-    color: '#6B7280',
-    marginBottom: 24,
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 20,
     lineHeight: 22,
   },
   notificationGrid: {
@@ -623,71 +540,57 @@ const styles = StyleSheet.create({
   },
   notificationCard: {
     width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 18,
     marginBottom: 12,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
   },
   notificationCardSelected: {
-    backgroundColor: '#0EA5E9',
-    borderColor: '#0EA5E9',
+    backgroundColor: Colors.accent,
+    borderColor: Colors.accent,
   },
   notificationLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#111827',
+    color: Colors.textPrimary,
     marginTop: 8,
     textAlign: 'center',
   },
   notificationLabelSelected: {
-    color: '#fff',
-  },
-  notificationInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 12,
-    gap: 8,
-  },
-  notificationInfoText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#6B7280',
+    color: '#FFFFFF',
   },
   footer: {
     padding: 24,
     paddingBottom: 40,
+    backgroundColor: Colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
   nextButton: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  nextButtonDisabled: {
-    opacity: 0.5,
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  nextButtonGradient: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 18,
+    paddingVertical: 16,
     gap: 8,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  nextButtonDisabled: {
+    backgroundColor: Colors.border,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   nextButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
-

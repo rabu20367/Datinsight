@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import Logo from '../components/Logo';
+import { Colors } from '../theme/colors';
 
 const NOTIFICATION_INTERVALS = [
   { id: 1, label: 'Every Minute', value: 1 },
-  { id: 5, label: 'Every 5 Minutes', value: 5 },
-  { id: 15, label: 'Every 15 Minutes', value: 15 },
-  { id: 30, label: 'Every 30 Minutes', value: 30 },
+  { id: 5, label: 'Every 5 Min', value: 5 },
+  { id: 15, label: 'Every 15 Min', value: 15 },
+  { id: 30, label: 'Every 30 Min', value: 30 },
   { id: 60, label: 'Every Hour', value: 60 },
   { id: 180, label: 'Every 3 Hours', value: 180 },
 ];
@@ -42,14 +43,13 @@ export default function SettingsScreen() {
     setNotificationInterval(value);
     await AsyncStorage.setItem('notificationInterval', String(value));
     
-    // Reschedule notifications
     await Notifications.cancelAllScheduledNotificationsAsync();
     
     if (notificationsEnabled) {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: '🧠 New Insights Available',
-          body: 'Datinsight has analyzed new patterns and predictions for you',
+          body: 'Datinsight has analyzed new patterns for you',
           sound: true,
         },
         trigger: {
@@ -67,7 +67,7 @@ export default function SettingsScreen() {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: '🧠 New Insights Available',
-          body: 'Datinsight has analyzed new patterns and predictions for you',
+          body: 'Datinsight has analyzed new patterns for you',
           sound: true,
         },
         trigger: {
@@ -82,38 +82,30 @@ export default function SettingsScreen() {
 
   const resetOnboarding = async () => {
     await AsyncStorage.removeItem('onboardingComplete');
-    // You would typically restart the app here or navigate to onboarding
   };
 
   return (
     <ScrollView style={styles.container}>
-      <LinearGradient
-        colors={['#0EA5E9', '#A855F7']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Settings</Text>
-        <Text style={styles.headerSubtitle}>Customize your experience</Text>
-      </LinearGradient>
+      <View style={styles.header}>
+        <Logo size="small" showText={false} />
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={styles.headerSubtitle}>Manage your preferences</Text>
+        </View>
+      </View>
 
-      {/* User Profile */}
+      {/* Profile */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Your Profile</Text>
+        <Text style={styles.sectionTitle}>PROFILE</Text>
         
         <View style={styles.profileCard}>
-          <View style={styles.profileIconContainer}>
-            <LinearGradient
-              colors={['#0EA5E9', '#A855F7']}
-              style={styles.profileIcon}
-            >
-              <Ionicons name="person" size={32} color="#fff" />
-            </LinearGradient>
+          <View style={styles.profileIcon}>
+            <Ionicons name="person" size={28} color={Colors.primary} />
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileLabel}>{userBackground || 'User'}</Text>
+            <Text style={styles.profileName}>{userBackground || 'User'}</Text>
             <Text style={styles.profileGoals}>
-              {userGoals.length > 0 ? userGoals.join(', ') : 'No goals set'}
+              {userGoals.length > 0 ? userGoals.join(' • ') : 'No goals set'}
             </Text>
           </View>
         </View>
@@ -121,34 +113,31 @@ export default function SettingsScreen() {
 
       {/* Notifications */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Intelligent Notifications</Text>
+        <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
         
         <View style={styles.settingCard}>
           <View style={styles.settingLeft}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="notifications" size={24} color="#0EA5E9" />
+            <View style={[styles.settingIcon, { backgroundColor: Colors.accentBg }]}>
+              <Ionicons name="notifications" size={22} color={Colors.accent} />
             </View>
             <View>
-              <Text style={styles.settingText}>Enable Notifications</Text>
+              <Text style={styles.settingText}>Smart Alerts</Text>
               <Text style={styles.settingDescription}>
-                Get insights and pattern alerts
+                Intelligent insights delivery
               </Text>
             </View>
           </View>
           <Switch
             value={notificationsEnabled}
             onValueChange={toggleNotifications}
-            trackColor={{ false: '#D1D5DB', true: '#0EA5E9' }}
-            thumbColor={notificationsEnabled ? '#fff' : '#f4f3f4'}
+            trackColor={{ false: Colors.border, true: Colors.primary }}
+            thumbColor={'#FFFFFF'}
           />
         </View>
 
         {notificationsEnabled && (
           <View style={styles.intervalSection}>
-            <Text style={styles.intervalTitle}>Notification Frequency</Text>
-            <Text style={styles.intervalDescription}>
-              Choose how often you want to receive insights
-            </Text>
+            <Text style={styles.intervalTitle}>Delivery Frequency</Text>
             
             <View style={styles.intervalGrid}>
               {NOTIFICATION_INTERVALS.map(interval => (
@@ -162,7 +151,7 @@ export default function SettingsScreen() {
                 >
                   {notificationInterval === interval.value && (
                     <View style={styles.intervalCheck}>
-                      <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                      <Ionicons name="checkmark-circle" size={18} color={Colors.accent} />
                     </View>
                   )}
                   <Text style={[
@@ -178,83 +167,45 @@ export default function SettingsScreen() {
         )}
       </View>
 
-      {/* Preferences */}
+      {/* App */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Preferences</Text>
+        <Text style={styles.sectionTitle}>APP</Text>
         
-        <TouchableOpacity style={styles.settingCard}>
+        <View style={styles.settingCard}>
           <View style={styles.settingLeft}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="color-palette" size={24} color="#0EA5E9" />
+            <View style={[styles.settingIcon, { backgroundColor: Colors.tertiaryBg }]}>
+              <Ionicons name="color-palette" size={22} color={Colors.tertiary} />
             </View>
             <Text style={styles.settingText}>Theme</Text>
           </View>
           <View style={styles.settingRight}>
             <Text style={styles.settingValue}>System</Text>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
           </View>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity style={styles.settingCard}>
-          <View style={styles.settingLeft}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="language" size={24} color="#0EA5E9" />
-            </View>
-            <Text style={styles.settingText}>Language</Text>
-          </View>
-          <View style={styles.settingRight}>
-            <Text style={styles.settingValue}>English</Text>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      {/* About */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About</Text>
-        
         <View style={styles.settingCard}>
           <View style={styles.settingLeft}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="information-circle" size={24} color="#0EA5E9" />
+            <View style={[styles.settingIcon, { backgroundColor: Colors.primaryBg }]}>
+              <Ionicons name="information-circle" size={22} color={Colors.primary} />
             </View>
             <Text style={styles.settingText}>Version</Text>
           </View>
           <Text style={styles.settingValue}>1.0.0</Text>
         </View>
-
-        <TouchableOpacity style={styles.settingCard}>
-          <View style={styles.settingLeft}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="shield-checkmark" size={24} color="#0EA5E9" />
-            </View>
-            <Text style={styles.settingText}>Privacy Policy</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.settingCard}>
-          <View style={styles.settingLeft}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="document-text" size={24} color="#0EA5E9" />
-            </View>
-            <Text style={styles.settingText}>Terms of Service</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-        </TouchableOpacity>
       </View>
 
-      {/* Account Actions */}
+      {/* Actions */}
       <View style={styles.section}>
-        <TouchableOpacity style={styles.dangerButton} onPress={resetOnboarding}>
-          <Ionicons name="refresh" size={20} color="#EF4444" />
-          <Text style={styles.dangerButtonText}>Reset Personalization</Text>
+        <TouchableOpacity style={styles.resetButton} onPress={resetOnboarding}>
+          <Ionicons name="refresh" size={18} color={Colors.accent} />
+          <Text style={styles.resetButtonText}>Reset Personalization</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          Made with ❤️ for intelligent insights
+          Made with intelligence
         </Text>
       </View>
     </ScrollView>
@@ -264,81 +215,82 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.textPrimary,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: '#fff',
-    opacity: 0.9,
-    marginTop: 4,
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
   section: {
     marginTop: 24,
     paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#6B7280',
-    textTransform: 'uppercase',
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.textSecondary,
     letterSpacing: 1,
-    marginBottom: 12,
+    marginBottom: 10,
     paddingHorizontal: 4,
   },
   profileCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: Colors.surface,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    gap: 16,
-    marginBottom: 8,
-  },
-  profileIconContainer: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   profileIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.primaryBg,
     justifyContent: 'center',
     alignItems: 'center',
   },
   profileInfo: {
     flex: 1,
   },
-  profileLabel: {
-    fontSize: 18,
+  profileName: {
+    fontSize: 17,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.textPrimary,
     textTransform: 'capitalize',
+    marginBottom: 2,
   },
   profileGoals: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
+    fontSize: 13,
+    color: Colors.textSecondary,
   },
   settingCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: Colors.surface,
+    padding: 14,
     borderRadius: 12,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   settingLeft: {
     flexDirection: 'row',
@@ -346,49 +298,46 @@ const styles = StyleSheet.create({
     gap: 12,
     flex: 1,
   },
-  settingIconContainer: {
+  settingIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
   settingText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#111827',
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textPrimary,
   },
   settingDescription: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: 12,
+    color: Colors.textSecondary,
     marginTop: 2,
   },
   settingRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   settingValue: {
-    fontSize: 15,
-    color: '#6B7280',
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontWeight: '500',
   },
   intervalSection: {
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: Colors.surface,
+    padding: 14,
     borderRadius: 12,
     marginTop: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   intervalTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  intervalDescription: {
     fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 16,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 12,
   },
   intervalGrid: {
     flexDirection: 'row',
@@ -397,17 +346,17 @@ const styles = StyleSheet.create({
   },
   intervalCard: {
     width: '48%',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.background,
     paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
     position: 'relative',
   },
   intervalCardActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#0EA5E9',
+    backgroundColor: Colors.primaryBg,
+    borderColor: Colors.primary,
   },
   intervalCheck: {
     position: 'absolute',
@@ -415,37 +364,36 @@ const styles = StyleSheet.create({
     right: 6,
   },
   intervalLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
   intervalLabelActive: {
-    color: '#0369A1',
-    fontWeight: '600',
+    color: Colors.primary,
   },
-  dangerButton: {
+  resetButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: Colors.surface,
+    padding: 14,
     borderRadius: 12,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#FEE2E2',
+    borderColor: Colors.accent + '30',
   },
-  dangerButtonText: {
-    fontSize: 16,
+  resetButtonText: {
+    fontSize: 15,
     fontWeight: '600',
-    color: '#EF4444',
+    color: Colors.accent,
   },
   footer: {
     padding: 24,
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 14,
-    color: '#9CA3AF',
+    fontSize: 13,
+    color: Colors.textMuted,
   },
 });

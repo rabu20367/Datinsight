@@ -1,20 +1,27 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Logo from '../components/Logo';
+import { Colors } from '../theme/colors';
 
 export default function SavedScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Saved</Text>
-        <Text style={styles.headerSubtitle}>Your bookmarked content</Text>
+        <Logo size="small" showText={false} />
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.headerTitle}>Saved</Text>
+          <Text style={styles.headerSubtitle}>Your bookmarked insights</Text>
+        </View>
       </View>
       
       <View style={styles.emptyContainer}>
-        <Ionicons name="bookmark-outline" size={80} color="#D1D5DB" />
+        <View style={styles.emptyIcon}>
+          <Ionicons name="bookmark-outline" size={64} color={Colors.textMuted} />
+        </View>
         <Text style={styles.emptyTitle}>No saved items yet</Text>
         <Text style={styles.emptyText}>
-          Bookmark articles and they'll appear here
+          Bookmark insights and they'll appear here
         </Text>
       </View>
     </View>
@@ -24,25 +31,27 @@ export default function SavedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 16,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: Colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.textPrimary,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
   emptyContainer: {
     flex: 1,
@@ -50,17 +59,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
   },
+  emptyIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Colors.primaryBg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#111827',
-    marginTop: 16,
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
   emptyText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: 8,
   },
 });
-

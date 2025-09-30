@@ -8,13 +8,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
+import Logo from '../components/Logo';
 import FeedCard from '../components/FeedCard';
 import LiveActivityBanner from '../components/LiveActivityBanner';
 import { fetchFeed } from '../services/api';
 import { FeedItem } from '../types';
+import { Colors } from '../theme/colors';
 
 export default function DashboardScreen({ navigation }: any) {
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
@@ -37,8 +38,6 @@ export default function DashboardScreen({ navigation }: any) {
 
   useEffect(() => {
     loadFeed();
-    
-    // Auto-refresh every 2 minutes
     const interval = setInterval(loadFeed, 120000);
     return () => clearInterval(interval);
   }, []);
@@ -48,22 +47,25 @@ export default function DashboardScreen({ navigation }: any) {
     loadFeed();
   };
 
-  const filteredItems = filter === 'all' 
-    ? feedItems 
-    : feedItems.filter(item => item.type === filter);
+  const filteredItems = filter === 'all' ? feedItems : feedItems.filter(item => item.type === filter);
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <LinearGradient
-        colors={['#0EA5E9', '#A855F7']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.header}
-      >
-        <Text style={styles.headerTitle}>Datinsight</Text>
-        <Text style={styles.headerSubtitle}>Real-Time Intelligence</Text>
-      </LinearGradient>
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Logo size="medium" showText={true} />
+          <TouchableOpacity onPress={loadFeed} disabled={loading} style={styles.refreshButton}>
+            <Ionicons 
+              name="refresh" 
+              size={22} 
+              color={loading ? Colors.textMuted : Colors.primary} 
+              style={{ transform: [{ rotate: loading ? '180deg' : '0deg' }] }}
+            />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.headerSubtitle}>Real-time intelligence platform</Text>
+      </View>
 
       {/* Live Activity Banner */}
       <LiveActivityBanner items={feedItems.slice(0, 5)} />
@@ -78,16 +80,10 @@ export default function DashboardScreen({ navigation }: any) {
         {(['all', 'news', 'social', 'podcast'] as const).map(type => (
           <TouchableOpacity
             key={type}
-            style={[
-              styles.filterButton,
-              filter === type && styles.filterButtonActive
-            ]}
+            style={[styles.filterButton, filter === type && styles.filterButtonActive]}
             onPress={() => setFilter(type)}
           >
-            <Text style={[
-              styles.filterButtonText,
-              filter === type && styles.filterButtonTextActive
-            ]}>
+            <Text style={[styles.filterButtonText, filter === type && styles.filterButtonTextActive]}>
               {type.charAt(0).toUpperCase() + type.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -97,19 +93,17 @@ export default function DashboardScreen({ navigation }: any) {
       {/* Feed */}
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0EA5E9" />
+          <ActivityIndicator size="large" color={Colors.primary} />
           <Text style={styles.loadingText}>Loading insights...</Text>
         </View>
       ) : (
         <ScrollView
           style={styles.feedScroll}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />}
         >
           {filteredItems.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Ionicons name="folder-open-outline" size={64} color="#ccc" />
+              <Ionicons name="folder-open-outline" size={64} color={Colors.textMuted} />
               <Text style={styles.emptyText}>No items found</Text>
             </View>
           ) : (
@@ -130,28 +124,39 @@ export default function DashboardScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 16,
     paddingHorizontal: 20,
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#fff',
-    opacity: 0.9,
+    fontSize: 13,
+    color: Colors.textSecondary,
     marginTop: 4,
   },
+  refreshButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primaryBg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   filterContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: Colors.border,
   },
   filterContent: {
     paddingHorizontal: 16,
@@ -159,22 +164,25 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   filterButton: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.border,
     marginRight: 8,
   },
   filterButtonActive: {
-    backgroundColor: '#0EA5E9',
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   filterButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: Colors.textPrimary,
   },
   filterButtonTextActive: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   feedScroll: {
     flex: 1,
@@ -186,8 +194,9 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 15,
+    color: Colors.textSecondary,
+    fontWeight: '500',
   },
   emptyContainer: {
     flex: 1,
@@ -197,8 +206,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     marginTop: 16,
-    fontSize: 16,
-    color: '#9CA3AF',
+    fontSize: 15,
+    color: Colors.textSecondary,
   },
 });
-

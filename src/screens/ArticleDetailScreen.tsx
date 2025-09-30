@@ -8,11 +8,11 @@ import {
   ActivityIndicator,
   Linking,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { analyzeContent, getUserProfile } from '../services/api';
 import { FeedItem, NewsArticle, SocialPost, PodcastEpisode, AIAnalysis } from '../types';
+import { Colors, getTypeColor, getBiasColor } from '../theme/colors';
 
 export default function ArticleDetailScreen({ route, navigation }: any) {
   const { item }: { item: FeedItem } = route.params;
@@ -23,7 +23,7 @@ export default function ArticleDetailScreen({ route, navigation }: any) {
     navigation.setOptions({
       headerRight: () => (
         <TouchableOpacity onPress={openInBrowser} style={{ marginRight: 8 }}>
-          <Ionicons name="open-outline" size={24} color="#0EA5E9" />
+          <Ionicons name="open-outline" size={24} color={Colors.primary} />
         </TouchableOpacity>
       ),
     });
@@ -74,33 +74,18 @@ export default function ArticleDetailScreen({ route, navigation }: any) {
 
   const openInBrowser = () => {
     const url = getUrl();
-    if (url) {
-      Linking.openURL(url);
-    }
+    if (url) Linking.openURL(url);
   };
 
-  const getBiasColor = (bias: string) => {
-    switch (bias) {
-      case 'left': return '#3B82F6';
-      case 'right': return '#EF4444';
-      case 'center': return '#10B981';
-      case 'mixed': return '#A855F7';
-      default: return '#6B7280';
-    }
-  };
+  const typeColor = getTypeColor(item.type);
 
   return (
     <ScrollView style={styles.container}>
       {/* Type Badge */}
       <View style={styles.badgeContainer}>
-        <LinearGradient
-          colors={getTypeBadgeGradient(item.type)}
-          style={styles.badge}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
+        <View style={[styles.badge, { backgroundColor: typeColor }]}>
           <Text style={styles.badgeText}>{item.type.toUpperCase()}</Text>
-        </LinearGradient>
+        </View>
         <Text style={styles.timestamp}>
           {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}
         </Text>
@@ -110,41 +95,28 @@ export default function ArticleDetailScreen({ route, navigation }: any) {
       <Text style={styles.title}>{getTitle()}</Text>
 
       {/* Source */}
-      <Text style={styles.source}>{getSource()}</Text>
+      <Text style={[styles.source, { color: typeColor }]}>{getSource()}</Text>
 
       {/* Content */}
       <Text style={styles.content}>{getContent()}</Text>
 
       {/* AI Analysis Button */}
       <TouchableOpacity
-        style={styles.analyzeButton}
+        style={[styles.analyzeButton, { backgroundColor: Colors.primary }]}
         onPress={loadAnalysis}
         disabled={loadingAnalysis}
       >
-        <LinearGradient
-          colors={['#0EA5E9', '#A855F7']}
-          style={styles.analyzeButtonGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <Ionicons name="sparkles" size={24} color="#fff" />
-          <Text style={styles.analyzeButtonText}>
-            {loadingAnalysis ? 'Analyzing...' : 'Generate Deep Insights'}
-          </Text>
-        </LinearGradient>
+        <Ionicons name="sparkles" size={20} color="#FFFFFF" />
+        <Text style={styles.analyzeButtonText}>
+          {loadingAnalysis ? 'Analyzing...' : 'Generate Deep Insights'}
+        </Text>
       </TouchableOpacity>
 
       {/* Loading State */}
       {loadingAnalysis && (
         <View style={styles.loadingContainer}>
-          <LinearGradient
-            colors={['#F0F9FF', '#F3E8FF']}
-            style={styles.loadingCard}
-          >
-            <ActivityIndicator size="large" color="#0EA5E9" />
-            <Text style={styles.loadingText}>AI is analyzing patterns and motives...</Text>
-            <Text style={styles.loadingSubtext}>Uncovering hidden insights</Text>
-          </LinearGradient>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>AI is analyzing patterns...</Text>
         </View>
       )}
 
@@ -152,53 +124,48 @@ export default function ArticleDetailScreen({ route, navigation }: any) {
       {analysis && (
         <View style={styles.analysisContainer}>
           {/* Summary */}
-          <InsightCard
-            icon="document-text"
-            title="Summary"
-            color="#0EA5E9"
-            gradientColors={['#EFF6FF', '#DBEAFE']}
-          >
+          <InsightSection icon="document-text" title="Summary" color={Colors.primary}>
             <Text style={styles.insightText}>{analysis.summary}</Text>
-          </InsightCard>
+          </InsightSection>
 
           {/* Deep Insights */}
           {analysis.deepInsights && (
             <>
               <SectionHeader icon="eye" title="Deep Insights" subtitle="Understanding the WHY" />
               
-              <DeepInsightItem
+              <DeepInsightCard
                 icon="target"
                 label="The Motive"
                 content={analysis.deepInsights.motive}
-                color="#F59E0B"
+                color={Colors.accent}
               />
               
-              <DeepInsightItem
+              <DeepInsightCard
                 icon="git-network"
                 label="Pattern Analysis"
                 content={analysis.deepInsights.patterns}
-                color="#8B5CF6"
+                color={Colors.primary}
               />
               
-              <DeepInsightItem
+              <DeepInsightCard
                 icon="time"
                 label="Why Now?"
                 content={analysis.deepInsights.whyNow}
-                color="#EC4899"
+                color={Colors.tertiary}
               />
               
-              <DeepInsightItem
+              <DeepInsightCard
                 icon="people"
                 label="Stakeholders"
                 content={analysis.deepInsights.stakeholders}
-                color="#06B6D4"
+                color={Colors.primary}
               />
               
-              <DeepInsightItem
+              <DeepInsightCard
                 icon="lock-open"
                 label="Hidden Factors"
                 content={analysis.deepInsights.hiddenFactors}
-                color="#10B981"
+                color={Colors.accent}
               />
             </>
           )}
@@ -212,36 +179,36 @@ export default function ArticleDetailScreen({ route, navigation }: any) {
                 icon="checkmark-circle"
                 label="Most Likely"
                 content={analysis.whatHappensNext.mostLikely}
-                color="#10B981"
+                color={Colors.primary}
               />
               
               <ScenarioCard
                 icon="arrow-up-circle"
                 label="Best Case"
                 content={analysis.whatHappensNext.bestCase}
-                color="#3B82F6"
+                color={Colors.tertiary}
               />
               
               <ScenarioCard
                 icon="arrow-down-circle"
                 label="Worst Case"
                 content={analysis.whatHappensNext.worstCase}
-                color="#EF4444"
+                color={Colors.accent}
               />
               
               <ScenarioCard
                 icon="flash"
                 label="Black Swan"
                 content={analysis.whatHappensNext.blackSwan}
-                color="#A855F7"
+                color={Colors.textSecondary}
               />
             </>
           )}
 
-          {/* Timeline Predictions */}
+          {/* Timeline */}
           {analysis.predictions && analysis.predictions.length > 0 && (
             <>
-              <SectionHeader icon="calendar" title="Timeline Predictions" subtitle="What to expect" />
+              <SectionHeader icon="calendar" title="Timeline" subtitle="Predictions over time" />
               
               <View style={styles.timelineContainer}>
                 {analysis.predictions.map((prediction, idx) => (
@@ -256,36 +223,33 @@ export default function ArticleDetailScreen({ route, navigation }: any) {
             </>
           )}
 
-          {/* Actionable Insights */}
+          {/* Personalized Insights */}
           {analysis.actionableInsights && analysis.actionableInsights.length > 0 && (
             <>
-              <SectionHeader icon="bulb" title="For You" subtitle="Personalized insights" />
+              <SectionHeader icon="person" title="For You" subtitle="Personalized recommendations" />
               
-              <LinearGradient
-                colors={['#FEF3C7', '#FDE68A']}
-                style={styles.actionableCard}
-              >
+              <View style={styles.personalCard}>
                 {analysis.actionableInsights.map((insight, idx) => (
-                  <View key={idx} style={styles.actionableItem}>
-                    <View style={styles.actionableNumber}>
-                      <Text style={styles.actionableNumberText}>{idx + 1}</Text>
+                  <View key={idx} style={styles.personalItem}>
+                    <View style={styles.personalNumber}>
+                      <Text style={styles.personalNumberText}>{idx + 1}</Text>
                     </View>
-                    <Text style={styles.actionableText}>{insight}</Text>
+                    <Text style={styles.personalText}>{insight}</Text>
                   </View>
                 ))}
-              </LinearGradient>
+              </View>
             </>
           )}
 
-          {/* Related Trends */}
+          {/* Connected Trends */}
           {analysis.relatedTrends && analysis.relatedTrends.length > 0 && (
             <>
-              <SectionHeader icon="link" title="Connected Trends" subtitle="The bigger picture" />
+              <SectionHeader icon="link" title="Connected Trends" subtitle="Related patterns" />
               
               <View style={styles.trendsContainer}>
                 {analysis.relatedTrends.map((trend, idx) => (
                   <View key={idx} style={styles.trendChip}>
-                    <Ionicons name="pulse" size={16} color="#0EA5E9" />
+                    <Ionicons name="pulse" size={14} color={Colors.primary} />
                     <Text style={styles.trendText}>{trend}</Text>
                   </View>
                 ))}
@@ -299,20 +263,17 @@ export default function ArticleDetailScreen({ route, navigation }: any) {
               <SectionHeader icon="analytics" title="Bias Analysis" subtitle="Perspective check" />
               
               <View style={styles.biasCard}>
-                <View style={styles.biasHeader}>
+                <View style={styles.biasRow}>
                   <Text style={styles.biasLabel}>Overall Bias:</Text>
-                  <View style={[
-                    styles.biasBadge,
-                    { backgroundColor: getBiasColor(analysis.biasAnalysis.overall) }
-                  ]}>
+                  <View style={[styles.biasBadge, { backgroundColor: getBiasColor(analysis.biasAnalysis.overall) }]}>
                     <Text style={styles.biasBadgeText}>
                       {analysis.biasAnalysis.overall.toUpperCase()}
                     </Text>
                   </View>
                 </View>
-                <View style={styles.biasConfidenceBar}>
+                <View style={styles.biasProgressBar}>
                   <View style={[
-                    styles.biasConfidenceFill,
+                    styles.biasProgress,
                     {
                       width: `${analysis.biasAnalysis.confidence * 100}%`,
                       backgroundColor: getBiasColor(analysis.biasAnalysis.overall)
@@ -335,7 +296,9 @@ export default function ArticleDetailScreen({ route, navigation }: any) {
 function SectionHeader({ icon, title, subtitle }: any) {
   return (
     <View style={styles.sectionHeader}>
-      <Ionicons name={icon} size={24} color="#0EA5E9" />
+      <View style={styles.sectionIconCircle}>
+        <Ionicons name={icon} size={20} color={Colors.primary} />
+      </View>
       <View style={styles.sectionHeaderText}>
         <Text style={styles.sectionTitle}>{title}</Text>
         <Text style={styles.sectionSubtitle}>{subtitle}</Text>
@@ -344,27 +307,27 @@ function SectionHeader({ icon, title, subtitle }: any) {
   );
 }
 
-function InsightCard({ icon, title, color, gradientColors, children }: any) {
+function InsightSection({ icon, title, color, children }: any) {
   return (
-    <LinearGradient colors={gradientColors} style={styles.insightCard}>
+    <View style={styles.insightCard}>
       <View style={styles.insightHeader}>
-        <Ionicons name={icon} size={20} color={color} />
+        <Ionicons name={icon} size={18} color={color} />
         <Text style={[styles.insightTitle, { color }]}>{title}</Text>
       </View>
       {children}
-    </LinearGradient>
+    </View>
   );
 }
 
-function DeepInsightItem({ icon, label, content, color }: any) {
+function DeepInsightCard({ icon, label, content, color }: any) {
   return (
-    <View style={styles.deepInsightItem}>
-      <View style={[styles.deepInsightIcon, { backgroundColor: color + '20' }]}>
-        <Ionicons name={icon} size={20} color={color} />
+    <View style={styles.deepCard}>
+      <View style={[styles.deepIcon, { backgroundColor: color + '15' }]}>
+        <Ionicons name={icon} size={18} color={color} />
       </View>
-      <View style={styles.deepInsightContent}>
-        <Text style={styles.deepInsightLabel}>{label}</Text>
-        <Text style={styles.deepInsightText}>{content}</Text>
+      <View style={styles.deepContent}>
+        <Text style={styles.deepLabel}>{label}</Text>
+        <Text style={styles.deepText}>{content}</Text>
       </View>
     </View>
   );
@@ -372,9 +335,9 @@ function DeepInsightItem({ icon, label, content, color }: any) {
 
 function ScenarioCard({ icon, label, content, color }: any) {
   return (
-    <View style={[styles.scenarioCard, { borderLeftColor: color }]}>
+    <View style={[styles.scenarioCard, { borderLeftColor: color, borderLeftWidth: 3 }]}>
       <View style={styles.scenarioHeader}>
-        <Ionicons name={icon} size={20} color={color} />
+        <Ionicons name={icon} size={18} color={color} />
         <Text style={[styles.scenarioLabel, { color }]}>{label}</Text>
       </View>
       <Text style={styles.scenarioText}>{content}</Text>
@@ -386,199 +349,188 @@ function TimelineItem({ number, content, isLast }: any) {
   return (
     <View style={styles.timelineItem}>
       <View style={styles.timelineLeft}>
-        <LinearGradient
-          colors={['#0EA5E9', '#A855F7']}
-          style={styles.timelineNumber}
-        >
-          <Text style={styles.timelineNumberText}>{number}</Text>
-        </LinearGradient>
+        <View style={styles.timelineCircle}>
+          <Text style={styles.timelineNumber}>{number}</Text>
+        </View>
         {!isLast && <View style={styles.timelineLine} />}
       </View>
-      <View style={styles.timelineContent}>
+      <View style={styles.timelineRight}>
         <Text style={styles.timelineText}>{content}</Text>
       </View>
     </View>
   );
 }
 
-function getTypeBadgeGradient(type: string) {
-  switch (type) {
-    case 'news': return ['#3B82F6', '#2563EB'];
-    case 'social': return ['#A855F7', '#9333EA'];
-    case 'podcast': return ['#10B981', '#059669'];
-    default: return ['#6B7280', '#4B5563'];
-  }
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: Colors.background,
   },
   badgeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
+    backgroundColor: Colors.surface,
   },
   badge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
   badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1,
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   timestamp: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
+    color: Colors.textSecondary,
   },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.textPrimary,
     paddingHorizontal: 16,
-    marginBottom: 12,
-    lineHeight: 34,
+    marginBottom: 10,
+    lineHeight: 32,
   },
   source: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#0EA5E9',
     paddingHorizontal: 16,
     marginBottom: 16,
   },
   content: {
-    fontSize: 16,
-    lineHeight: 26,
-    color: '#374151',
+    fontSize: 15,
+    lineHeight: 24,
+    color: Colors.textSecondary,
     paddingHorizontal: 16,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   analyzeButton: {
-    marginHorizontal: 16,
-    marginBottom: 24,
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#0EA5E9',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-  },
-  analyzeButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 18,
-    gap: 12,
+    marginHorizontal: 16,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    gap: 8,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   analyzeButtonText: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '700',
   },
   loadingContainer: {
-    marginHorizontal: 16,
-    marginBottom: 24,
-  },
-  loadingCard: {
     alignItems: 'center',
-    padding: 32,
-    borderRadius: 20,
+    padding: 24,
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  loadingSubtext: {
-    marginTop: 4,
+    marginTop: 12,
     fontSize: 14,
-    color: '#6B7280',
+    color: Colors.textSecondary,
+    fontWeight: '500',
   },
   analysisContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 40,
+    paddingBottom: 32,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: 20,
+    marginBottom: 12,
     gap: 12,
+  },
+  sectionIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.primaryBg,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sectionHeaderText: {
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.textPrimary,
   },
   sectionSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
+    color: Colors.textSecondary,
   },
   insightCard: {
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 16,
+    backgroundColor: Colors.surface,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   insightHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
     gap: 8,
   },
   insightTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   insightText: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: '#374151',
+    fontSize: 14,
+    lineHeight: 22,
+    color: Colors.textPrimary,
   },
-  deepInsightItem: {
+  deepCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    gap: 16,
+    backgroundColor: Colors.surface,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  deepInsightIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  deepIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  deepInsightContent: {
+  deepContent: {
     flex: 1,
   },
-  deepInsightLabel: {
-    fontSize: 14,
+  deepLabel: {
+    fontSize: 13,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 6,
+    color: Colors.textPrimary,
+    marginBottom: 4,
   },
-  deepInsightText: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#4B5563',
+  deepText: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: Colors.textSecondary,
   },
   scenarioCard: {
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: Colors.surface,
+    padding: 14,
     borderRadius: 12,
-    marginBottom: 12,
-    borderLeftWidth: 4,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   scenarioHeader: {
     flexDirection: 'row',
@@ -587,146 +539,155 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   scenarioLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   scenarioText: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#4B5563',
+    fontSize: 13,
+    lineHeight: 20,
+    color: Colors.textSecondary,
   },
   timelineContainer: {
     paddingVertical: 8,
   },
   timelineItem: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   timelineLeft: {
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
-  timelineNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  timelineCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  timelineNumberText: {
-    color: '#fff',
-    fontSize: 14,
+  timelineNumber: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '700',
   },
   timelineLine: {
     width: 2,
     flex: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
     marginTop: 4,
   },
-  timelineContent: {
+  timelineRight: {
     flex: 1,
-    paddingTop: 4,
+    paddingTop: 2,
   },
   timelineText: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: '#374151',
+    fontSize: 14,
+    lineHeight: 22,
+    color: Colors.textPrimary,
   },
-  actionableCard: {
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 16,
+  personalCard: {
+    backgroundColor: Colors.tertiaryBg,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.tertiary + '30',
   },
-  actionableItem: {
+  personalItem: {
     flexDirection: 'row',
-    marginBottom: 16,
-    gap: 12,
+    marginBottom: 14,
+    gap: 10,
   },
-  actionableNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#F59E0B',
+  personalNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.tertiary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  actionableNumberText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '700',
+  personalNumberText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
-  actionableText: {
+  personalText: {
     flex: 1,
-    fontSize: 15,
-    lineHeight: 24,
-    color: '#78350F',
+    fontSize: 13,
+    lineHeight: 20,
+    color: Colors.textPrimary,
     fontWeight: '500',
   },
   trendsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
   },
   trendChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
+    backgroundColor: Colors.primaryBg,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
     gap: 6,
+    borderWidth: 1,
+    borderColor: Colors.primary + '30',
   },
   trendText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#0369A1',
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.primary,
   },
   biasCard: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: Colors.surface,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  biasHeader: {
+  biasRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-    gap: 12,
+    gap: 10,
   },
   biasLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#6B7280',
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textSecondary,
   },
   biasBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 10,
   },
   biasBadgeText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
-  biasConfidenceBar: {
-    height: 8,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 4,
+  biasProgressBar: {
+    height: 6,
+    backgroundColor: Colors.background,
+    borderRadius: 3,
     overflow: 'hidden',
     marginBottom: 8,
   },
-  biasConfidenceFill: {
-    height: 8,
-    borderRadius: 4,
+  biasProgress: {
+    height: 6,
+    borderRadius: 3,
   },
   biasConfidence: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginBottom: 12,
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginBottom: 10,
+    fontWeight: '600',
   },
   biasReasoning: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#374151',
+    fontSize: 13,
+    lineHeight: 20,
+    color: Colors.textPrimary,
   },
 });
